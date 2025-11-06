@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#ffb703">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>🎨 Desenho Infantil</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+  <header>
+    <h1>🎨 Desenho Infantil</h1>
+    <p>Clique em um desenho para começar a pintar!</p>
+  </header>
+
+  <section id="gallery">
+    <h2>Escolha um desenho:</h2>
+  </section>
+
+  <div id="canvas-container">
+    <canvas id="canvas" width="2000" height="2000"></canvas>
+  </div>
+
+  <section id="palette">
+    <h2>Paleta de Cores:</h2>
+    <div class="colors">
+      <button class="color" data-color="#FF5733"></button>
+      <button class="color" data-color="#33FF57"></button>
+      <button class="color" data-color="#3357FF"></button>
+      <button class="color" data-color="#F3FF33"></button>
+      <button class="color" data-color="#FF33F3"></button>
+      <button class="color" data-color="#33FFF3"></button>
+      <button class="color" data-color="#FFFFFF"></button>
+      <button class="color" data-color="#000000"></button>
+    </div>
+  </section>
+
+  <section id="thickness">
+    <h2>Grossura do Traço:</h2>
+    <div class="thickness-options">
+      <button class="thickness" data-size="4">Fino</button>
+      <button class="thickness" data-size="8">Médio</button>
+      <button class="thickness" data-size="16">Grosso</button>
+    </div>
+  </section>
+
+  <section id="actions">
+    <button id="clear">Limpar</button>
+    <button id="save">Salvar</button>
+  </section>
+
+  <script src="app.js"></script>
+
+  <!-- Service Worker desativado temporariamente -->
+  <!--
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('✅ SW registrado:', reg.scope))
+          .catch(err => console.warn('⚠️ Erro no SW:', err));
+      });
+    }
+  </script>
+  -->
+</body>
+</html>

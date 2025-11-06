@@ -1,0 +1,139 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #ffb703;
+  --bg: #fdf0d5;
+  --text: #003049;
+}
+
+body {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 12px;
+  max-width: 800px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+header {
+  text-align: center;
+  margin: 10px 0;
+}
+
+h1 {
+  font-size: 1.8em;
+  color: var(--primary);
+}
+
+h2 {
+  font-size: 1.2em;
+  margin: 12px 0 8px;
+}
+
+#gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+#gallery img {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  border: 2px solid #aaa;
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+}
+
+#canvas-container {
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  overflow: auto;
+  border: 3px solid var(--primary);
+  border-radius: 8px;
+  margin: 16px auto;
+  background: white;
+  position: relative;
+}
+
+#canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+#palette .colors,
+#thickness .thickness-options {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+
+.color {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.thickness {
+  font-family: inherit;
+  font-size: 0.9em;
+  padding: 6px 12px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+}
+
+.thickness:hover {
+  background: #eee;
+}
+
+#actions {
+  text-align: center;
+  margin: 20px 0;
+}
+
+button {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-size: 1.1em;
+  padding: 10px 18px;
+  margin: 0 8px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* Estilos das cores */
+.color[data-color="#FF5733"] { background: #FF5733; }
+.color[data-color="#33FF57"] { background: #33FF57; }
+.color[data-color="#3357FF"] { background: #3357FF; }
+.color[data-color="#F3FF33"] { background: #F3FF33; }
+.color[data-color="#FF33F3"] { background: #FF33F3; }
+.color[data-color="#33FFF3"] { background: #33FFF3; }
+.color[data-color="#FFFFFF"] { background: #FFFFFF; border: 2px solid #ccc; }
+.color[data-color="#000000"] { background: #000000; }
+
+.thickness[data-size="4"] { font-size: 0.8em; }
+.thickness[data-size="8"] { font-size: 1em; }
+.thickness[data-size="16"] { font-size: 1.2em; }

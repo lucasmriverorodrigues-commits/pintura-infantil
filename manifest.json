@@ -1,0 +1,25 @@
+{
+  "name": "Desenho Infantil",
+  "short_name": "Pintura PB",
+  "description": "App de pintura com desenhos em preto e branco para crianças. Funciona offline!",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#fdf0d5",
+  "theme_color": "#ffb703",
+  "lang": "pt-BR",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
