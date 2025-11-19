@@ -1,4 +1,4 @@
-// app.js - versão com lata de tinta e melhorias
+// app.js - versão final com flood fill e zoom com dois dedos
 
 const imageFiles = [
   'images/beija_flor.jpg',
@@ -24,6 +24,12 @@ const gallery = document.getElementById('gallery');
 const clearBtn = document.getElementById('clear');
 const saveBtn = document.getElementById('save');
 const canvasContainer = document.getElementById('canvas-container');
+
+// Zoom
+let scale = 1;
+let offsetX = 0;
+let offsetY = 0;
+let isPinching = false;
 
 function formatName(filename) {
   return filename
@@ -73,30 +79,50 @@ document.querySelectorAll('.thickness').forEach(btn => {
   });
 });
 
-// Modo lata de tinta (fill)
-function fillArea(x, y) {
+// Flood Fill (lata de tinta)
+function floodFill(x, y, targetColor, fillColor) {
+  if (x < 0 || x >= canvas.width || y < 0 || y >= canvas.height) return;
+
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const pixel = ctx.getImageData(x, y, 1, 1).data;
-  const targetColor = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3]})`;
+  const pixelIndex = (y * canvas.width + x) * 4;
 
-  if (targetColor === currentColor) return; // Não pinta se for a mesma cor
+  const r = imageData.data[pixelIndex];
+  const g = imageData.data[pixelIndex + 1];
+  const b = imageData.data[pixelIndex + 2];
+  const a = imageData.data[pixelIndex + 3];
 
-  // Pintar área (simplificado)
-  ctx.fillStyle = currentColor;
-  ctx.beginPath();
-  ctx.arc(x, y, 20, 0, Math.PI * 2);
-  ctx.fill();
+  const currentColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+
+  if (currentColor === targetColor) return;
+
+  ctx.fillStyle = fillColor;
+  ctx.fillRect(x, y, 1, 1);
+
+  floodFill(x + 1, y, targetColor, fillColor);
+  floodFill(x - 1, y, targetColor, fillColor);
+  floodFill(x, y + 1, targetColor, fillColor);
+  floodFill(x, y - 1, targetColor, fillColor);
 }
 
 // Pintura
 function paint(e) {
   if (!painting) return;
   const rect = canvas.getBoundingClientRect();
-  const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-  const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+  const x = Math.floor((e.clientX - rect.left) * (canvas.width / rect.width));
+  const y = Math.floor((e.clientY - rect.top) * (canvas.height / rect.height));
 
   if (isFilling) {
-    fillArea(x, y);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixelIndex = (y * canvas.width + x) * 4;
+    const r = imageData.data[pixelIndex];
+    const g = imageData.data[pixelIndex + 1];
+    const b = imageData.data[pixelIndex + 2];
+    const a = imageData.data[pixelIndex + 3];
+    const targetColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+
+    if (targetColor !== currentColor) {
+      floodFill(x, y, targetColor, currentColor);
+    }
   } else {
     ctx.fillStyle = currentColor;
     ctx.beginPath();
@@ -105,11 +131,11 @@ function paint(e) {
   }
 }
 
+// Mouse
 canvas.addEventListener('mousedown', (e) => {
   painting = true;
-  const rect = canvas.getBoundingClientRect();
-  lastX = (e.clientX - rect.left) * (canvas.width / rect.width);
-  lastY = (e.clientY - rect.top) * (canvas.height / rect.height);
+  lastX = e.clientX;
+  lastY = e.clientY;
   paint(e);
 });
 
@@ -119,19 +145,73 @@ canvas.addEventListener('mouseout', () => painting = false);
 
 // Toque
 canvas.addEventListener('touchstart', (e) => {
-  painting = true;
-  const touch = e.touches[0];
-  const rect = canvas.getBoundingClientRect();
-  lastX = (touch.clientX - rect.left) * (canvas.width / rect.width);
-  lastY = (touch.clientY - rect.top) * (canvas.height / rect.height);
-  paint(e);
-  e.preventDefault();
+  if (e.touches.length === 1) {
+    painting = true;
+    const touch = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    lastX = touch.clientX;
+    lastY = touch.clientY;
+    paint(e);
+    e.preventDefault();
+  } else if (e.touches.length === 2) {
+    isPinching = true;
+    e.preventDefault();
+  }
 });
+
 canvas.addEventListener('touchmove', (e) => {
-  paint(e);
-  e.preventDefault();
+  if (e.touches.length === 1 && !isPinching) {
+    paint(e);
+    e.preventDefault();
+  } else if (e.touches.length === 2) {
+    const touch1 = e.touches[0];
+    const touch2 = e.touches[1];
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    if (lastDistance) {
+      const delta = distance / lastDistance;
+      scale = Math.max(0.5, Math.min(3, scale * delta));
+      applyTransform();
+    }
+
+    lastDistance = distance;
+    e.preventDefault();
+  }
 });
-canvas.addEventListener('touchend', () => painting = false);
+
+canvas.addEventListener('touchend', (e) => {
+  if (e.touches.length === 0) {
+    painting = false;
+    isPinching = false;
+    lastDistance = null;
+  }
+});
+
+// Zoom com mouse wheel
+canvasContainer.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  scale = Math.max(0.5, Math.min(3, scale * delta));
+
+  const rect = canvasContainer.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  const newOffsetX = mouseX - (mouseX - offsetX) * delta;
+  const newOffsetY = mouseY - (mouseY - offsetY) * delta;
+
+  offsetX = newOffsetX;
+  offsetY = newOffsetY;
+
+  applyTransform();
+});
+
+function applyTransform() {
+  canvas.style.transform = `scale(${scale}) translate(${offsetX}px, ${offsetY}px)`;
+  canvas.style.transformOrigin = '0 0';
+}
 
 // Botões
 clearBtn.addEventListener('click', () => {
@@ -168,3 +248,6 @@ fillBtn.addEventListener('click', () => {
 
 // Adiciona o botão ao final da seção de ações
 document.querySelector('#actions').appendChild(fillBtn);
+
+// Variáveis auxiliares para zoom
+let lastDistance = null;
