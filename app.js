@@ -1,4 +1,4 @@
-// app.js - versão final e funcional
+// app.js - versão com lata de tinta e melhorias
 
 const imageFiles = [
   'images/beija_flor.jpg',
@@ -14,7 +14,9 @@ const imageFiles = [
 let currentColor = '#FF5733';
 let painting = false;
 let brushSize = 8;
-let isDrawing = false;
+let isFilling = false; // Modo lata de tinta
+let lastX = 0;
+let lastY = 0;
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -36,7 +38,6 @@ imageFiles.forEach(src => {
   const img = document.createElement('img');
   img.src = src;
   img.alt = formatName(src);
-  img.title = formatName(src);
   img.addEventListener('click', () => loadDrawing(src));
   gallery.appendChild(img);
 });
@@ -44,7 +45,6 @@ imageFiles.forEach(src => {
 function loadDrawing(src) {
   const img = new Image();
   img.onload = () => {
-    // Ajusta canvas ao tamanho da imagem
     canvas.width = img.width;
     canvas.height = img.height;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -59,61 +59,79 @@ function loadDrawing(src) {
 
 // Cores
 document.querySelectorAll('.color').forEach(btn => {
-  btn.addEventListener('click', () => currentColor = btn.dataset.color);
+  btn.addEventListener('click', () => {
+    currentColor = btn.dataset.color;
+    isFilling = false; // Sai do modo lata de tinta
+  });
 });
 
 // Espessura
 document.querySelectorAll('.thickness').forEach(btn => {
   btn.addEventListener('click', () => {
     brushSize = parseInt(btn.dataset.size);
-    document.querySelectorAll('.thickness').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    isFilling = false; // Sai do modo lata de tinta
   });
 });
 
-// Pintura
-function startPaint(e) {
-  painting = true;
-  paint(e);
-}
+// Modo lata de tinta (fill)
+function fillArea(x, y) {
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const pixel = ctx.getImageData(x, y, 1, 1).data;
+  const targetColor = `rgba(${pixel[0]}, ${pixel[1]}, ${pixel[2]}, ${pixel[3]})`;
 
-function stopPaint() {
-  painting = false;
-  ctx.beginPath();
-}
+  if (targetColor === currentColor) return; // Não pinta se for a mesma cor
 
-function getPos(e) {
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
-  const x = (e.clientX - rect.left) * scaleX;
-  const y = (e.clientY - rect.top) * scaleY;
-  return { x, y };
-}
-
-function paint(e) {
-  if (!painting) return;
-  const pos = 'touches' in e ? getPos(e.touches[0]) : getPos(e);
+  // Pintar área (simplificado)
   ctx.fillStyle = currentColor;
   ctx.beginPath();
-  ctx.arc(pos.x, pos.y, brushSize, 0, Math.PI * 2);
+  ctx.arc(x, y, 20, 0, Math.PI * 2);
   ctx.fill();
 }
 
-canvas.addEventListener('mousedown', startPaint);
-canvas.addEventListener('mousemove', paint);
-canvas.addEventListener('mouseup', stopPaint);
-canvas.addEventListener('mouseout', stopPaint);
+// Pintura
+function paint(e) {
+  if (!painting) return;
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+  const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
+  if (isFilling) {
+    fillArea(x, y);
+  } else {
+    ctx.fillStyle = currentColor;
+    ctx.beginPath();
+    ctx.arc(x, y, brushSize, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  painting = true;
+  const rect = canvas.getBoundingClientRect();
+  lastX = (e.clientX - rect.left) * (canvas.width / rect.width);
+  lastY = (e.clientY - rect.top) * (canvas.height / rect.height);
+  paint(e);
+});
+
+canvas.addEventListener('mousemove', paint);
+canvas.addEventListener('mouseup', () => painting = false);
+canvas.addEventListener('mouseout', () => painting = false);
+
+// Toque
 canvas.addEventListener('touchstart', (e) => {
+  painting = true;
+  const touch = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  lastX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+  lastY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+  paint(e);
   e.preventDefault();
-  startPaint(e.touches[0]);
 });
 canvas.addEventListener('touchmove', (e) => {
+  paint(e);
   e.preventDefault();
-  paint(e.touches[0]);
 });
-canvas.addEventListener('touchend', stopPaint);
+canvas.addEventListener('touchend', () => painting = false);
 
 // Botões
 clearBtn.addEventListener('click', () => {
@@ -124,4 +142,29 @@ clearBtn.addEventListener('click', () => {
   }
 });
 
-saveBtn.addEventListener
+saveBtn.addEventListener('click', () => {
+  const link = document.createElement('a');
+  link.download = 'minha_pintura.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+});
+
+// Botão de lata de tinta (opcional)
+const fillBtn = document.createElement('button');
+fillBtn.id = 'fill';
+fillBtn.textContent = 'Lata de Tinta';
+fillBtn.style.margin = '0 8px';
+fillBtn.style.padding = '10px 18px';
+fillBtn.style.border = 'none';
+fillBtn.style.borderRadius = '10px';
+fillBtn.style.background = '#ffb703';
+fillBtn.style.color = 'white';
+fillBtn.style.cursor = 'pointer';
+fillBtn.style.boxShadow = '0 3px 5px rgba(0,0,0,0.2)';
+fillBtn.addEventListener('click', () => {
+  isFilling = true;
+  alert('Modo lata de tinta ativado. Clique em uma área para pintar.');
+});
+
+// Adiciona o botão ao final da seção de ações
+document.querySelector('#actions').appendChild(fillBtn);
