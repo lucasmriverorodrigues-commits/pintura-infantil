@@ -136,4 +136,11 @@ button:hover {
 
 .thickness[data-size="4"] { font-size: 0.8em; }
 .thickness[data-size="8"] { font-size: 1em; }
+
 .thickness[data-size="16"] { font-size: 1.2em; }
+
+/* Estilos para o botão de lata de tinta */
+#fill {
+  font-family: "Comic Sans MS", cursive, sans-serif;
+  font-size: 1.1em;
+}
